@@ -1,34 +1,51 @@
 import sys
 import pygame 
 
+from scripts.entities import *
+from scripts.utils import *
+from scripts.tilemap import Tilemap
+
 class Game:
     def __init__(self): 
         pygame.init()
 
         # Title
         pygame.display.set_caption('Jump Man')
-
-        # Setting the display
+        # Setting the resolution
         self.screen = pygame.display.set_mode((640, 480))
+        # Scaling
+        self.display = pygame.Surface((320,240))
 
         # Forcing the game to run at 60 FPS
         self.clock = pygame.time.Clock()
         
-        # Putting an image on screen
-        self.image = pygame.image.load('data/images/clouds/cloud_1.png')
-        
-        # Removing the black background
-        self.image.set_colorkey((0, 0, 0))
-        
         # Moving an image / element
-        self.image_pos = [160, 260]
         self.movement = [False, False]
+        
+        # Grabbing image for player
+        self.assets = {
+            'decor': load_images('tiles/decor'),
+            'grass': load_images('tiles/grass'),
+            'large_decor': load_images('tiles/large_decor'),
+            'stone': load_images('tiles/stone'),
+            'player': load_image('entities/player.png')
+        }
+        
+
+        
+        self.player = PhysicsEntity(self, 'player', (50, 50), (8, 15))
+        
+        self.tilemap = Tilemap(self, tile_size=16)
         
     def run(self):
         while True:
-            self.screen.fill((14, 219, 248))
-            self.image_pos[1] += (self.movement[1] - self.movement[0]) *5 # *5 is adding speed 
-            self.screen.blit(self.image, self.image_pos)
+            self.display.fill((14, 219, 248))
+            
+            self.tilemap.render(self.display)
+            
+            self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+            self.player.render(self.display)
+            
             
             
             for event in pygame.event.get():
@@ -37,27 +54,27 @@ class Game:
                     sys.exit() 
                     
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_LEFT:
                         self.movement[0] = True
-                    elif event.key == pygame.K_w:
+                    elif event.key == pygame.K_a:
                         self.movement[0] = True
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_RIGHT:
                         self.movement[1] = True
-                    elif event.key == pygame.K_s:
+                    elif event.key == pygame.K_d:
                         self.movement[1] = True
                 
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_LEFT:
                         self.movement[0] = False
-                    elif event.key == pygame.K_w:
+                    elif event.key == pygame.K_a:
                         self.movement[0] = False
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_RIGHT:
                         self.movement[1] = False
-                    elif event.key == pygame.K_s:
+                    elif event.key == pygame.K_d:
                         self.movement[1] = False
                 
-                
-                
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0,0))    
+            
             pygame.display.update() 
             self.clock.tick(60)
     
